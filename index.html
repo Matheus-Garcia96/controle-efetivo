@@ -43,10 +43,6 @@
             90% { opacity: 1; }
             100% { top: 110%; opacity: 0; }
         }
-        
-        .login-title-shadow {
-            text-shadow: 0 8px 25px rgba(0,0,0,0.8), 0 0 30px rgba(56, 189, 248, 0.5);
-        }
     </style>
 </head>
 <body>
@@ -126,18 +122,15 @@
 
         // Sincronização GLOBAL do Logo via Firestore
         useEffect(() => {
-          // Busca o logo no banco de dados. 
           const unsubscribe = db.collection("dados").doc("config").onSnapshot((doc) => {
             if (doc.exists && doc.data().logo) {
               setFotoApp(doc.data().logo);
-              // Salva um backup de segurança no PC para garantir que a tela de login inicial sempre tenha a imagem
               localStorage.setItem('logoBackupGDAAE', doc.data().logo);
             } else {
               setFotoApp('');
               localStorage.removeItem('logoBackupGDAAE');
             }
           }, (err) => {
-            // Se der erro de permissão (ex: tela de login), puxa o backup local
             const backup = localStorage.getItem('logoBackupGDAAE');
             if (backup) setFotoApp(backup);
           });
@@ -234,11 +227,9 @@
 
         const deletarMilitar = (id) => { if (window.confirm('Deletar este militar?')) setMilitares(militares.filter(m => m.id !== id)); };
 
-        // NOVO UPLOAD DE LOGO (Salva no Firebase)
         const handleFotoUpload = async (e) => {
           const file = e.target.files[0];
           if (file) {
-            // Trava de segurança: Firestore aceita no max 1MB por documento. 800KB é um bom limite seguro.
             if (file.size > 800000) {
                 alert("A imagem é muito pesada! Por favor, reduza a foto para menos de 800KB antes de subir.");
                 return;
@@ -247,7 +238,6 @@
             reader.onload = async (event) => {
               const base64 = event.target.result;
               try {
-                  // Salva globalmente na nuvem
                   await db.collection("dados").doc("config").set({ logo: base64 }, { merge: true });
                   alert("Logo sincronizado! Agora ele aparecerá em todos os computadores.");
               } catch (error) {
@@ -402,41 +392,54 @@
         const handleFiltroPosto = (v) => { setFiltroPosto(v); setPaginaAtual(1); };
         const handleFiltroSecao = (v) => { setFiltroSecao(v); setPaginaAtual(1); };
 
+        // ==========================================
+        // TELA DE LOGIN RESTAURADA COM LUZ TOTAL
+        // ==========================================
         if (!user) {
           return (
             <div className="min-h-screen flex bg-slate-900 font-sans">
               
+              {/* Lado Esquerdo - Fundo Tecnológico C2 TOTALMENTE CLARO */}
               <div 
-                className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center bg-slate-950"
+                className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center bg-slate-900"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(15, 30, 60, 0.4), rgba(15, 30, 60, 0.4)), url('https://i.ibb.co/tp7C2VYh/imagem-site.jpg')`,
+                  /* Removida a opacidade escura. Agora o filtro é levíssimo (10% a 30%) apenas para evitar que o texto branco suma */
+                  backgroundImage: `linear-gradient(rgba(11, 25, 44, 0.1), rgba(11, 25, 44, 0.3)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop')`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat'
                 }}
               >
+                {/* Linha de Scanner Animada */}
+                <div className="scanner-line"></div>
+
+                {/* Texto sobreposto com Sombras Fortes para manter a legibilidade no fundo claro */}
                 <div className="relative z-20 text-center px-12">
                   <h2 
-                    className="text-6xl xl:text-7xl font-black mb-4 tracking-tight text-white drop-shadow-2xl"
-                    style={{ textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 10px 20px rgba(0,0,0,0.9)' }}
+                    className="text-6xl xl:text-7xl font-black mb-4 tracking-tight text-white"
+                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.8)' }}
                   >
                     1º GDAAE
                   </h2>
                   <p 
-                    className="text-xl xl:text-2xl font-bold text-slate-100 uppercase tracking-widest"
-                    style={{ textShadow: '1px 1px 3px #000, 0 4px 8px rgba(0,0,0,0.9)' }}
+                    className="text-xl xl:text-2xl font-bold text-white uppercase tracking-widest"
+                    style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.9), 0 4px 8px rgba(0,0,0,0.6)' }}
                   >
                     Grupo de Defesa Antiaérea
                   </p>
-                  <div className="mt-12 inline-block p-5 backdrop-blur-md bg-slate-900/60 rounded-2xl border border-white/20 shadow-2xl">
-                    <p className="text-sm font-black tracking-widest uppercase text-blue-300">Sistema Integrado de Efetivo</p>
+                  <div className="mt-12 inline-block p-4 backdrop-blur-sm bg-slate-900/30 rounded-2xl border border-white/40 shadow-xl">
+                    <p className="text-sm font-black tracking-widest uppercase text-white" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                      Sistema Integrado de Efetivo
+                    </p>
                   </div>
                 </div>
               </div>
 
+              {/* Lado Direito - Formulário */}
               <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50 relative shadow-[-10px_0_30px_rgba(0,0,0,0.3)] z-30">
                 <div className="max-w-md w-full space-y-8 relative z-10">
                   
+                  {/* Cabeçalho do Form */}
                   <div className="text-center">
                     {fotoApp ? (
                       <img src={fotoApp} alt="Logo GDAAE" className="mx-auto h-28 w-28 object-contain rounded-2xl shadow-lg border-4 border-white bg-white" />
@@ -453,6 +456,7 @@
                     </p>
                   </div>
 
+                  {/* Caixa do Formulário */}
                   <div className="mt-8 bg-white py-8 px-6 shadow-2xl rounded-3xl border border-slate-100 sm:px-10">
                     
                     {error && (
