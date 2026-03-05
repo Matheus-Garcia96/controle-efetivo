@@ -65,16 +65,18 @@
         const [militarEmEdicao, setMilitarEmEdicao] = useState(null);
         const [busca, setBusca] = useState('');
 
-        // Para criação de usuário
+        // Gerenciar usuários
+        const [usersList, setUsersList] = useState([]);
         const [newUserEmail, setNewUserEmail] = useState('');
         const [newUserPassword, setNewUserPassword] = useState('');
         const [newUserNomeGuerra, setNewUserNomeGuerra] = useState('');
         const [newUserRole, setNewUserRole] = useState('user');
 
-        // Lista de usuários
-        const [usersList, setUsersList] = useState([]);
+        // Para editar nome de guerra
+        const [editUserId, setEditUserId] = useState(null);
+        const [editNomeGuerra, setEditNomeGuerra] = useState('');
 
-        // Detecta login e carrega dados do usuário
+        // Detecta login e carrega dados
         useEffect(() => {
           const unsubscribe = auth.onAuthStateChanged(async (u) => {
             setUser(u);
@@ -86,11 +88,11 @@
                 const defaultRole = (u.email === ADMIN_EMAIL) ? "admin" : "user";
                 await db.collection("usuarios").doc(u.uid).set({
                   email: u.email,
-                  nomeGuerra: u.email.split('@')[0], // default inicial, pode mudar depois
+                  nomeGuerra: u.email.split('@')[0].toUpperCase(),
                   role: defaultRole,
                   createdAt: new Date().toISOString()
                 });
-                setUserData({ role: defaultRole, nomeGuerra: u.email.split('@')[0] });
+                setUserData({ role: defaultRole, nomeGuerra: u.email.split('@')[0].toUpperCase() });
               }
             } else {
               setUserData(null);
@@ -110,7 +112,63 @@
                 const defaultList = [
                   { id: 1, nome: 'JULIO CESAR', post: 'CB' },
                   { id: 2, nome: 'DAHER', post: 'S1' },
-                  // ... (sua lista completa de 60 aqui - mantive só os primeiros para exemplo)
+                  { id: 3, nome: 'ROGÉRIO', post: 'S1' },
+                  { id: 4, nome: 'BRASIL', post: 'S1' },
+                  { id: 5, nome: 'VINICIUS', post: 'S1' },
+                  { id: 6, nome: 'VIEIRA', post: 'S1' },
+                  { id: 7, nome: 'FELIPE', post: 'S1' },
+                  { id: 8, nome: 'EMERSON', post: 'S1' },
+                  { id: 9, nome: 'DÊNIS', post: 'S1' },
+                  { id: 10, nome: 'TOLENTINO', post: 'S1' },
+                  { id: 11, nome: 'FANTINEL', post: 'S1' },
+                  { id: 12, nome: 'JULIANO', post: 'S1' },
+                  { id: 13, nome: 'THAÍS', post: 'S1' },
+                  { id: 14, nome: 'J. COSTA', post: 'S1' },
+                  { id: 15, nome: 'REGINALDO', post: 'S1' },
+                  { id: 16, nome: 'ANDERSON', post: 'S1' },
+                  { id: 17, nome: 'LEOTE', post: 'S1' },
+                  { id: 18, nome: 'VILA NOVA', post: 'S1' },
+                  { id: 19, nome: 'GUSTAVO MELO', post: 'S1' },
+                  { id: 20, nome: 'ESPÍRITO SANTO', post: 'S1' },
+                  { id: 21, nome: 'VINÍCIUS SÁ', post: 'S1' },
+                  { id: 22, nome: 'ROBERTO', post: 'S1' },
+                  { id: 23, nome: 'TÉOGENES', post: 'S1' },
+                  { id: 24, nome: 'MARCELO', post: 'S1' },
+                  { id: 25, nome: 'FERREIRA', post: 'S1' },
+                  { id: 26, nome: 'OSCAR', post: 'S1' },
+                  { id: 27, nome: 'FÁBIO', post: 'S1' },
+                  { id: 28, nome: 'REPPETTO', post: 'S1' },
+                  { id: 29, nome: 'LEANDRO', post: 'S1' },
+                  { id: 30, nome: 'LUANA', post: 'S1' },
+                  { id: 31, nome: 'MARCIO', post: 'S1' },
+                  { id: 32, nome: 'MENEZES', post: 'S1' },
+                  { id: 33, nome: 'COLOMBO', post: 'S1' },
+                  { id: 34, nome: 'TERRA', post: 'S1' },
+                  { id: 35, nome: 'TAMIOZZO', post: 'S1' },
+                  { id: 36, nome: 'LENON', post: 'S1' },
+                  { id: 37, nome: 'PROENÇA', post: 'S1' },
+                  { id: 38, nome: 'GABRIEL LIMA', post: 'S1' },
+                  { id: 39, nome: 'ANTÔNIO', post: 'S1' },
+                  { id: 40, nome: 'RICKSON', post: 'S1' },
+                  { id: 41, nome: 'COUTO', post: 'S1' },
+                  { id: 42, nome: 'BENITES', post: 'S1' },
+                  { id: 43, nome: 'TERRES', post: 'S1' },
+                  { id: 44, nome: 'FANTI', post: 'S1' },
+                  { id: 45, nome: 'GILBERTO', post: 'S1' },
+                  { id: 46, nome: 'WAZEN', post: 'S1' },
+                  { id: 47, nome: 'PERETTO', post: 'S1' },
+                  { id: 48, nome: 'MAX', post: 'S1' },
+                  { id: 49, nome: 'LEONARDO MACHADO', post: 'S1' },
+                  { id: 50, nome: 'FREIRE', post: 'S1' },
+                  { id: 51, nome: 'A. GARCIA', post: 'S1' },
+                  { id: 52, nome: 'KRONBAUER', post: 'S1' },
+                  { id: 53, nome: 'GYAN', post: 'S1' },
+                  { id: 54, nome: 'SCHERER', post: 'S1' },
+                  { id: 55, nome: 'SALOMÃO', post: 'S1' },
+                  { id: 56, nome: 'SCHIAM', post: 'S1' },
+                  { id: 57, nome: 'YAGO', post: 'S1' },
+                  { id: 58, nome: 'RAFAEL LUZ', post: 'S1' },
+                  { id: 59, nome: 'FABIAN', post: 'S1' },
                   { id: 60, nome: 'ABDUL', post: 'S1' }
                 ];
                 setMilitares(defaultList);
@@ -125,7 +183,7 @@
           db.collection("dados").doc("militares").set({ lista: militares });
         }, [militares, userData]);
 
-        // Carrega chamadas individuais do usuário
+        // Carrega chamadas individuais
         useEffect(() => {
           if (!user) return;
           db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas")
@@ -145,11 +203,7 @@
           if (!chamadas[date]) {
             const inicial = {};
             militares.forEach(m => {
-              inicial[m.nome] = { 
-                status: 'PRESENTE', 
-                horario: '', 
-                observacao: '' 
-              };
+              inicial[m.nome] = { status: 'PRESENTE', horario: '', observacao: '' };
             });
             setChamadas(prev => ({ ...prev, [date]: inicial }));
             if (user) {
@@ -340,6 +394,25 @@
             setNewUserNomeGuerra('');
           } catch (err) {
             alert('Erro ao criar: ' + err.message);
+          }
+        };
+
+        const editarNomeGuerra = async () => {
+          if (!editNomeGuerra.trim()) return alert('Digite o novo Nome de Guerra!');
+          try {
+            await db.collection("usuarios").doc(editUserId).update({
+              nomeGuerra: editNomeGuerra.trim().toUpperCase()
+            });
+            alert('Nome de Guerra atualizado!');
+            setEditUserId(null);
+            setEditNomeGuerra('');
+            // Atualiza lista
+            const updatedList = usersList.map(u => 
+              u.id === editUserId ? { ...u, nomeGuerra: editNomeGuerra.trim().toUpperCase() } : u
+            );
+            setUsersList(updatedList);
+          } catch (err) {
+            alert('Erro: ' + err.message);
           }
         };
 
@@ -864,7 +937,17 @@
                               <p className="text-sm text-gray-600">Email: {u.email}</p>
                               <p className="text-sm text-gray-600">Role: {u.role}</p>
                             </div>
-                            <p className="text-xs text-gray-500">Criado em {new Date(u.createdAt).toLocaleDateString()}</p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditUserId(u.id);
+                                  setEditNomeGuerra(u.nomeGuerra || '');
+                                }}
+                                className="bg-yellow-500 text-white px-3 py-1 rounded text-xs font-semibold"
+                              >
+                                Editar Nome
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -873,6 +956,39 @@
                 )}
               </div>
             </div>
+
+            {/* Modal para editar Nome de Guerra */}
+            {editUserId && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl">
+                  <h3 className="font-bold text-lg mb-4">Editar Nome de Guerra</h3>
+                  <input
+                    type="text"
+                    value={editNomeGuerra}
+                    onChange={(e) => setEditNomeGuerra(e.target.value)}
+                    placeholder="Novo Nome de Guerra"
+                    className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg text-sm mb-4"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={editarNomeGuerra}
+                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+                    >
+                      Salvar
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditUserId(null);
+                        setEditNomeGuerra('');
+                      }}
+                      className="flex-1 bg-slate-400 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Rodapé com autoria */}
             <footer className="fixed bottom-0 left-0 right-0 bg-slate-900 text-white text-center py-2 text-xs shadow-lg z-50">
