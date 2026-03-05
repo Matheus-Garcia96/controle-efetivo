@@ -82,7 +82,10 @@
         const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
         const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
         const [selectedMilitar, setSelectedMilitar] = useState('');
-        const [fotoApp, setFotoApp] = useState(() => localStorage.getItem('fotoApp') || '');
+        
+        // Estado Global do Logo (Firestore Sync)
+        const [fotoApp, setFotoApp] = useState('');
+        
         const [novoMilitar, setNovoMilitar] = useState({ nome: '', post: 'S1', secao: '' });
         const [militarEmEdicao, setMilitarEmEdicao] = useState(null);
         
@@ -121,6 +124,26 @@
 
         const postos = ['Cel', 'TC', 'MJ', 'CP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2'];
 
+        // Sincronização GLOBAL do Logo via Firestore
+        useEffect(() => {
+          // Busca o logo no banco de dados. 
+          const unsubscribe = db.collection("dados").doc("config").onSnapshot((doc) => {
+            if (doc.exists && doc.data().logo) {
+              setFotoApp(doc.data().logo);
+              // Salva um backup de segurança no PC para garantir que a tela de login inicial sempre tenha a imagem
+              localStorage.setItem('logoBackupGDAAE', doc.data().logo);
+            } else {
+              setFotoApp('');
+              localStorage.removeItem('logoBackupGDAAE');
+            }
+          }, (err) => {
+            // Se der erro de permissão (ex: tela de login), puxa o backup local
+            const backup = localStorage.getItem('logoBackupGDAAE');
+            if (backup) setFotoApp(backup);
+          });
+          return unsubscribe;
+        }, []);
+
         // Login Listener
         useEffect(() => {
           const unsubscribe = auth.onAuthStateChanged(async (u) => {
@@ -146,18 +169,20 @@
           return unsubscribe;
         }, []);
 
-        // Carrega militares e chamadas
+        // Carrega militares
         useEffect(() => {
           db.collection("dados").doc("militares").get().then(doc => {
               if (doc.exists) { setMilitares(doc.data().lista || []); }
             });
         }, []);
 
+        // Salva mudanças na lista global (só admin)
         useEffect(() => {
           if (!user || userData?.role !== "admin" || militares.length === 0) return;
           db.collection("dados").doc("militares").set({ lista: militares });
         }, [militares, userData]);
 
+        // Carrega chamadas individuais
         useEffect(() => {
           if (!user) return;
           db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas").get().then(doc => {
@@ -209,16 +234,39 @@
 
         const deletarMilitar = (id) => { if (window.confirm('Deletar este militar?')) setMilitares(militares.filter(m => m.id !== id)); };
 
-        const handleFotoUpload = (e) => {
+        // NOVO UPLOAD DE LOGO (Salva no Firebase)
+        const handleFotoUpload = async (e) => {
           const file = e.target.files[0];
           if (file) {
+            // Trava de segurança: Firestore aceita no max 1MB por documento. 800KB é um bom limite seguro.
+            if (file.size > 800000) {
+                alert("A imagem é muito pesada! Por favor, reduza a foto para menos de 800KB antes de subir.");
+                return;
+            }
             const reader = new FileReader();
-            reader.onload = (event) => { setFotoApp(event.target.result); localStorage.setItem('fotoApp', event.target.result); };
+            reader.onload = async (event) => {
+              const base64 = event.target.result;
+              try {
+                  // Salva globalmente na nuvem
+                  await db.collection("dados").doc("config").set({ logo: base64 }, { merge: true });
+                  alert("Logo sincronizado! Agora ele aparecerá em todos os computadores.");
+              } catch (error) {
+                  alert("Erro ao salvar no servidor: " + error.message);
+              }
+            };
             reader.readAsDataURL(file);
           }
         };
 
-        const removerFoto = () => { setFotoApp(''); localStorage.removeItem('fotoApp'); };
+        const removerFoto = async () => { 
+            if(window.confirm("Remover o logo de TODOS os computadores da base de dados?")) {
+                try {
+                    await db.collection("dados").doc("config").set({ logo: "" }, { merge: true });
+                } catch (error) {
+                    alert("Erro ao remover do servidor: " + error.message);
+                }
+            }
+        };
 
         const getEstatisticas = () => {
           let totais = {};
@@ -299,7 +347,7 @@
           printWindow.document.close();
         };
 
-        // Gerenciar usuários
+        // Gerenciar usuários (admin)
         useEffect(() => {
           if (userData?.role !== "admin") return;
           db.collection("usuarios").get().then(snapshot => {
@@ -354,46 +402,41 @@
         const handleFiltroPosto = (v) => { setFiltroPosto(v); setPaginaAtual(1); };
         const handleFiltroSecao = (v) => { setFiltroSecao(v); setPaginaAtual(1); };
 
-        // ==========================================
-        // TELA DE LOGIN VIP (CENTRO DE COMANDO MAIS CLARO)
-        // ==========================================
         if (!user) {
           return (
             <div className="min-h-screen flex bg-slate-900 font-sans">
               
-              {/* Lado Esquerdo - Fundo Tecnológico C2 (Agora mais claro!) */}
               <div 
-                className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center bg-blue-900"
+                className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center bg-slate-950"
                 style={{
-                  /* Reduzi a opacidade do filtro azul escuro para deixar a imagem de fundo brilhar e ficar bem mais clara */
-                  backgroundImage: `linear-gradient(rgba(30, 58, 138, 0.2), rgba(15, 23, 42, 0.6)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop')`,
+                  backgroundImage: `linear-gradient(rgba(15, 30, 60, 0.4), rgba(15, 30, 60, 0.4)), url('https://i.ibb.co/tp7C2VYh/imagem-site.jpg')`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat'
                 }}
               >
-                {/* Linha de Scanner que fica passando de cima para baixo */}
-                <div className="scanner-line"></div>
-
-                {/* Texto sobreposto */}
                 <div className="relative z-20 text-center px-12">
-                  <h2 className="text-6xl xl:text-7xl font-black mb-4 tracking-tight text-white login-title-shadow">
+                  <h2 
+                    className="text-6xl xl:text-7xl font-black mb-4 tracking-tight text-white drop-shadow-2xl"
+                    style={{ textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0px 10px 20px rgba(0,0,0,0.9)' }}
+                  >
                     1º GDAAE
                   </h2>
-                  <p className="text-xl xl:text-2xl font-bold text-white uppercase tracking-widest drop-shadow-lg">
+                  <p 
+                    className="text-xl xl:text-2xl font-bold text-slate-100 uppercase tracking-widest"
+                    style={{ textShadow: '1px 1px 3px #000, 0 4px 8px rgba(0,0,0,0.9)' }}
+                  >
                     Grupo de Defesa Antiaérea
                   </p>
-                  <div className="mt-12 inline-block p-5 backdrop-blur-md bg-slate-900/40 rounded-2xl border border-white/30 shadow-2xl">
+                  <div className="mt-12 inline-block p-5 backdrop-blur-md bg-slate-900/60 rounded-2xl border border-white/20 shadow-2xl">
                     <p className="text-sm font-black tracking-widest uppercase text-blue-300">Sistema Integrado de Efetivo</p>
                   </div>
                 </div>
               </div>
 
-              {/* Lado Direito - Formulário */}
               <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-slate-50 relative shadow-[-10px_0_30px_rgba(0,0,0,0.3)] z-30">
                 <div className="max-w-md w-full space-y-8 relative z-10">
                   
-                  {/* Cabeçalho do Form */}
                   <div className="text-center">
                     {fotoApp ? (
                       <img src={fotoApp} alt="Logo GDAAE" className="mx-auto h-28 w-28 object-contain rounded-2xl shadow-lg border-4 border-white bg-white" />
@@ -410,7 +453,6 @@
                     </p>
                   </div>
 
-                  {/* Caixa do Formulário */}
                   <div className="mt-8 bg-white py-8 px-6 shadow-2xl rounded-3xl border border-slate-100 sm:px-10">
                     
                     {error && (
