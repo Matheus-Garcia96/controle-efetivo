@@ -12,72 +12,14 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Firebase Compat SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: #f1f5f9; }
         input, select, textarea, button { font-size: 16px !important; }
-        .login-bg {
-            background-image: url('https://files.catbox.moe/0j8q0z.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 5%;
-        }
-        .login-box {
-            background: rgba(255, 255, 255, 0.93);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 2.5rem 2.5rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-        .login-box h1 {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #1e293b;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        input {
-            width: 100%;
-            padding: 0.9rem 1rem;
-            margin-bottom: 1.2rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 1rem;
-            background: rgba(255,255,255,0.8);
-        }
-        button {
-            width: 100%;
-            padding: 1rem;
-            background-color: #3b82f6;
-            color: white;
-            font-weight: bold;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-        button:hover {
-            background-color: #2563eb;
-            transform: translateY(-1px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
@@ -93,7 +35,6 @@
         messagingSenderId: "429973959348",
         appId: "1:429973959348:web:9ab69b7cb1efe242ab5de1"
       };
-
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
       const auth = firebase.auth();
@@ -101,10 +42,9 @@
 
     <script type="text/babel">
       const { useState, useEffect } = React;
-
       const ADMIN_EMAIL = "matheusgarcia9607@gmail.com";
 
-      function EfetevoApp() {
+      function EfetivoApp() {
         const [user, setUser] = useState(null);
         const [userData, setUserData] = useState(null);
         const [email, setEmail] = useState('');
@@ -120,15 +60,11 @@
         const [novoMilitar, setNovoMilitar] = useState({ nome: '', post: 'S1' });
         const [militarEmEdicao, setMilitarEmEdicao] = useState(null);
         const [busca, setBusca] = useState('');
-
-        // Gerenciar usuários
         const [usersList, setUsersList] = useState([]);
         const [newUserEmail, setNewUserEmail] = useState('');
         const [newUserPassword, setNewUserPassword] = useState('');
         const [newUserNomeGuerra, setNewUserNomeGuerra] = useState('');
         const [newUserRole, setNewUserRole] = useState('user');
-
-        // Para editar nome de guerra
         const [editUserId, setEditUserId] = useState(null);
         const [editNomeGuerra, setEditNomeGuerra] = useState('');
 
@@ -276,7 +212,6 @@
           if (!novaChamada[date]) novaChamada[date] = {};
           novaChamada[date][militar] = { status, horario, observacao };
           setChamadas(novaChamada);
-
           if (user) {
             db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas")
               .set(novaChamada, { merge: true });
@@ -299,7 +234,7 @@
 
         const salvarEdicao = () => {
           if (!militarEmEdicao.nome.trim()) return alert('Digite o nome!');
-          setMilitares(militares.map(m => 
+          setMilitares(militares.map(m =>
             m.id === militarEmEdicao.id ? { ...m, nome: militarEmEdicao.nome.toUpperCase(), post: militarEmEdicao.post } : m
           ));
           setMilitarEmEdicao(null);
@@ -332,7 +267,6 @@
           const stats = {};
           const listaMilitares = militarFiltro ? militares.filter(m => m.nome === militarFiltro) : militares;
           listaMilitares.forEach(m => stats[m.nome] = { presente: 0, falta: 0, atrasado: 0, total: 0 });
-
           Object.keys(chamadas).forEach(date => {
             if (date.startsWith(selectedMonth)) {
               Object.keys(chamadas[date]).forEach(militar => {
@@ -365,14 +299,29 @@
                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                 th { background: #1f2937; color: white; padding: 15px; text-align: left; font-size: 13px; }
                 td { padding: 12px 15px; border: 1px solid #e5e7eb; font-size: 13px; }
+                .assinatura { 
+                  margin-top: 80px; 
+                  text-align: center; 
+                  font-size: 16px; 
+                  font-weight: bold; 
+                  color: #1f2937; 
+                }
+                .linha-assinatura { 
+                  width: 400px; 
+                  border-bottom: 2px solid #000; 
+                  margin: 50px auto 20px auto; 
+                }
               </style>
             </head>
             <body>
               <div class="container">
-                <h1>📋 Relatório de Chamada - 1º GDAAE</h1>
-                <p style="text-align: right; color: #666; margin-bottom: 20px;">
-                  Gerado por: ${userData?.nomeGuerra || user?.email || 'Desconhecido'} em ${new Date().toLocaleString('pt-BR')}
-                </p>
+                <div class="header">
+                  <h1>📋 Relatório de Chamada - 1º GDAAE</h1>
+                  <p style="text-align: right; color: #666; margin-bottom: 20px;">
+                    Gerado por: ${userData?.nomeGuerra || user?.email || 'Desconhecido'} em ${new Date().toLocaleString('pt-BR')}
+                  </p>
+                </div>
+
                 <table>
                   <thead>
                     <tr>
@@ -387,27 +336,33 @@
                   <tbody>
           `;
 
+          // Inclui TODOS os militares em TODAS as datas
           datas.forEach(data => {
             militares.forEach(militar => {
-              const chamadaDados = chamadas[data]?.[militar.nome];
-              if (chamadaDados && chamadaDados.status) {
-                htmlContent += `
-                  <tr>
-                    <td>${data}</td>
-                    <td>${militar.nome}</td>
-                    <td>${militar.post}</td>
-                    <td>${chamadaDados.status}</td>
-                    <td>${chamadaDados.horario || '-'}</td>
-                    <td>${chamadaDados.observacao || '-'}</td>
-                  </tr>
-                `;
-              }
+              const chamadaDados = chamadas[data]?.[militar.nome] || { status: 'PRESENTE', horario: '', observacao: '' };
+              htmlContent += `
+                <tr>
+                  <td>${data}</td>
+                  <td>${militar.nome}</td>
+                  <td>${militar.post}</td>
+                  <td>${chamadaDados.status}</td>
+                  <td>${chamadaDados.horario || '-'}</td>
+                  <td>${chamadaDados.observacao || '-'}</td>
+                </tr>
+              `;
             });
           });
 
           htmlContent += `
                   </tbody>
                 </table>
+
+                <!-- Assinatura final -->
+                <div class="assinatura">
+                  <div class="linha-assinatura"></div>
+                  CHEFE DA SUBSEÇÃO DE GESTÃO DE PESSOAL
+                </div>
+
               </div>
             </body>
             </html>
@@ -462,8 +417,7 @@
             alert('Nome de Guerra atualizado!');
             setEditUserId(null);
             setEditNomeGuerra('');
-            // Atualiza lista
-            const updatedList = usersList.map(u => 
+            const updatedList = usersList.map(u =>
               u.id === editUserId ? { ...u, nomeGuerra: editNomeGuerra.trim().toUpperCase() } : u
             );
             setUsersList(updatedList);
@@ -474,50 +428,30 @@
 
         if (!user) {
           return (
-            <div className="login-bg min-h-screen">
-              <div className="login-box">
-                <h1 className="text-3xl font-bold text-center mb-8 text-slate-800">Controle de Efetivo</h1>
-                {error && <p className="text-red-600 mb-6 text-center font-medium">{error}</p>}
-                <input 
-                  type="email" 
-                  placeholder="Email" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  className="block w-full px-4 py-3 mb-4 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <input 
-                  type="password" 
-                  placeholder="Senha" 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  className="block w-full px-4 py-3 mb-6 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button 
-                  onClick={() => auth.signInWithEmailAndPassword(email, password).catch(err => setError(err.message))}
-                  className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition duration-200 shadow-md"
-                >
+            <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+              <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full">
+                <h1 className="text-2xl font-bold mb-6 text-center">Controle de Efetivo</h1>
+                {error && <p className="text-red-600 mb-4 text-center">{error}</p>}
+                <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} className="w-full p-3 mb-4 border rounded" />
+                <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="w-full p-3 mb-4 border rounded" />
+                <button onClick={() => auth.signInWithEmailAndPassword(email, password).catch(err => setError(err.message))} className="w-full bg-blue-600 text-white p-3 rounded mb-2 font-semibold">
                   Entrar
                 </button>
-                <p className="text-center text-sm text-slate-600 mt-6">
-                  Contate o administrador para criar uma conta.
-                </p>
+                <p className="text-center text-sm text-gray-600 mt-4">Contate o administrador para criar uma conta.</p>
               </div>
             </div>
           );
         }
 
         const isAdmin = userData?.role === "admin";
-
         const estatisticas = calcularEstatisticas(selectedMilitar);
         const chamadaDia = getChamadaDodia(selectedDate);
         const expediente = getExpediente(selectedDate);
         const dayName = new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long' });
-
         const militaresFiltrados = militares.filter(m =>
           m.nome.toLowerCase().includes(busca.toLowerCase()) ||
           m.post.toLowerCase().includes(busca.toLowerCase())
         );
-
         const postos = ['Cel', 'TC', 'MJ', 'CP', '1T', '2T', 'ASP', 'SO', '1S', '2S', '3S', 'CB', 'S1', 'S2'];
 
         return (
@@ -640,7 +574,6 @@
                                   {dados.status}
                                 </span>
                               </div>
-
                               <div className="flex flex-wrap gap-2 items-center">
                                 <select
                                   value={dados.status}
@@ -675,7 +608,6 @@
                                   <option value="REUNIÃO">REUNIÃO</option>
                                   <option value="AGDL">AGDL</option>
                                 </select>
-
                                 {(dados.status === 'PRESENTE' || dados.status === 'ATRASADO') && (
                                   <input
                                     type="time"
@@ -684,7 +616,6 @@
                                     className="w-28 px-3 py-2 border-2 border-slate-300 rounded-lg text-sm"
                                   />
                                 )}
-
                                 <input
                                   type="text"
                                   value={dados.observacao}
@@ -701,12 +632,230 @@
                   </div>
                 )}
 
-                {/* ... (o resto do conteúdo das outras abas permanece igual ao seu arquivo original - não repeti para não ficar gigante, mas mantenha) ... */}
+                {activeTab === 'estatisticas' && (
+                  <div className="space-y-4">
+                    <div className="flex gap-2 flex-col sm:flex-row">
+                      <input
+                        type="month"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="flex-1 px-3 py-2 border-2 border-slate-300 rounded-lg font-semibold text-sm"
+                      />
+                      <select
+                        value={selectedMilitar}
+                        onChange={(e) => setSelectedMilitar(e.target.value)}
+                        className="flex-1 px-3 py-2 border-2 border-slate-300 rounded-lg font-semibold text-sm"
+                      >
+                        <option value="">Todos</option>
+                        {militares.map((m) => (
+                          <option key={m.id} value={m.nome}>{m.nome.slice(0, 15)}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {selectedMilitar && (
+                      <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
+                        <p className="font-bold text-sm text-blue-900 mb-3">{selectedMilitar}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-white p-3 rounded border text-center">
+                            <p className="text-xs text-gray-600">Dias</p>
+                            <p className="text-2xl font-bold text-blue-600">{estatisticas[selectedMilitar]?.total || 0}</p>
+                          </div>
+                          <div className="bg-white p-3 rounded border text-center">
+                            <p className="text-xs text-gray-600">Presentes</p>
+                            <p className="text-2xl font-bold text-green-600">{estatisticas[selectedMilitar]?.presente || 0}</p>
+                          </div>
+                          <div className="bg-white p-3 rounded border text-center">
+                            <p className="text-xs text-gray-600">Faltas</p>
+                            <p className="text-2xl font-bold text-red-600">{estatisticas[selectedMilitar]?.falta || 0}</p>
+                          </div>
+                          <div className="bg-white p-3 rounded border text-center">
+                            <p className="text-xs text-gray-600">Taxa</p>
+                            <p className="text-2xl font-bold text-purple-600">
+                              {estatisticas[selectedMilitar]?.total > 0
+                                ? ((estatisticas[selectedMilitar].presente / estatisticas[selectedMilitar].total) * 100).toFixed(0)
+                                : 0}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 p-4 rounded-lg border-2 border-slate-200 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-slate-900 text-white">
+                          <tr>
+                            <th className="px-2 py-2 text-left">Militar</th>
+                            <th className="px-2 py-2 text-center">Dias</th>
+                            <th className="px-2 py-2 text-center">Pres</th>
+                            <th className="px-2 py-2 text-center">Fal</th>
+                            <th className="px-2 py-2 text-center">%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(selectedMilitar ? militares.filter(m => m.nome === selectedMilitar) : militares).map((m) => {
+                            const stats = estatisticas[m.nome];
+                            const taxa = stats.total > 0 ? ((stats.presente / stats.total) * 100).toFixed(0) : 0;
+                            return (
+                              <tr key={m.id} className="border-b">
+                                <td className="px-2 py-1 text-xs">{m.nome.slice(0, 12)}</td>
+                                <td className="px-2 py-1 text-center">{stats.total}</td>
+                                <td className="px-2 py-1 text-center text-green-700">{stats.presente}</td>
+                                <td className="px-2 py-1 text-center text-red-700">{stats.falta}</td>
+                                <td className="px-2 py-1 text-center font-bold">{taxa}%</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'militares' && (
+                  <div className="space-y-4">
+                    {isAdmin && (
+                      <div className="flex gap-2 flex-col sm:flex-row">
+                        <input
+                          type="text"
+                          value={novoMilitar.nome}
+                          onChange={(e) => setNovoMilitar({ ...novoMilitar, nome: e.target.value })}
+                          placeholder="Nome"
+                          className="flex-1 px-3 py-2 border-2 border-blue-300 rounded-lg text-sm"
+                        />
+                        <select
+                          value={novoMilitar.post}
+                          onChange={(e) => setNovoMilitar({ ...novoMilitar, post: e.target.value })}
+                          className="flex-1 px-3 py-2 border-2 border-blue-300 rounded-lg text-sm"
+                        >
+                          {postos.map(post => (
+                            <option key={post} value={post}>{post}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={adicionarMilitar}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap"
+                        >
+                          ➕ Adicionar
+                        </button>
+                      </div>
+                    )}
+
+                    <input
+                      type="text"
+                      value={busca}
+                      onChange={(e) => setBusca(e.target.value)}
+                      placeholder="🔍 Buscar..."
+                      className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg text-sm"
+                    />
+
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      {militaresFiltrados.map((militar, index) => (
+                        <div
+                          key={militar.id}
+                          className="bg-slate-50 border-2 border-slate-200 rounded-lg p-3 flex items-center justify-between gap-2"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate">{militar.nome}</p>
+                            <p className="text-xs text-slate-600">{militar.post}</p>
+                          </div>
+                          <div className="flex gap-1 items-center flex-shrink-0">
+                            {isAdmin && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    if (index > 0) {
+                                      const novaLista = [...militares];
+                                      [novaLista[index - 1], novaLista[index]] = [novaLista[index], novaLista[index - 1]];
+                                      setMilitares(novaLista);
+                                    }
+                                  }}
+                                  disabled={index === 0}
+                                  className={`px-2 py-1 rounded text-xs font-bold ${
+                                    index === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                  }`}
+                                  title="Subir posição"
+                                >
+                                  ↑
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (index < militares.length - 1) {
+                                      const novaLista = [...militares];
+                                      [novaLista[index], novaLista[index + 1]] = [novaLista[index + 1], novaLista[index]];
+                                      setMilitares(novaLista);
+                                    }
+                                  }}
+                                  disabled={index === militares.length - 1}
+                                  className={`px-2 py-1 rounded text-xs font-bold ${
+                                    index === militares.length - 1 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                  }`}
+                                  title="Descer posição"
+                                >
+                                  ↓
+                                </button>
+                                <button
+                                  onClick={() => editarMilitar(militar.id)}
+                                  className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => deletarMilitar(militar.id)}
+                                  className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
+                                >
+                                  🗑️
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {militarEmEdicao && isAdmin && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg p-4 max-w-xs w-full shadow-2xl">
+                          <h3 className="font-bold text-lg mb-3">✏️ Editar Militar</h3>
+                          <input
+                            type="text"
+                            value={militarEmEdicao.nome}
+                            onChange={(e) => setMilitarEmEdicao({ ...militarEmEdicao, nome: e.target.value })}
+                            className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg text-sm mb-3"
+                          />
+                          <select
+                            value={militarEmEdicao.post}
+                            onChange={(e) => setMilitarEmEdicao({ ...militarEmEdicao, post: e.target.value })}
+                            className="w-full px-3 py-2 border-2 border-slate-300 rounded-lg text-sm mb-3"
+                          >
+                            {postos.map(post => (
+                              <option key={post} value={post}>{post}</option>
+                            ))}
+                          </select>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={salvarEdicao}
+                              className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+                            >
+                              Salvar
+                            </button>
+                            <button
+                              onClick={() => setMilitarEmEdicao(null)}
+                              className="flex-1 bg-slate-400 text-white px-4 py-2 rounded-lg font-semibold text-sm"
+                            >
+                              Fechar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {activeTab === 'configuracoes' && isAdmin && (
                   <div className="space-y-4">
                     <h2 className="font-bold text-lg">⚙️ Configurações</h2>
-                    
+
                     <div className="bg-blue-50 border-2 border-blue-300 p-4 rounded-lg">
                       <p className="font-bold text-sm mb-3">📸 Logo/Foto</p>
                       {fotoApp && (
@@ -851,7 +1000,7 @@
       }
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<EfetevoApp />);
+      root.render(<EfetivoApp />);
     </script>
 </body>
 </html>
