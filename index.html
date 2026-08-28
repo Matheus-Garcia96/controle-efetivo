@@ -173,12 +173,62 @@
           db.collection("dados").doc("militares").set({ lista: militares });
         }, [militares, userData]);
 
-        // Carrega chamadas individuais
+        // Carrega chamadas individuais (um documento por dia + migracao do formato antigo)
+        // OBS: o formato antigo guardava TODAS as datas em um unico documento
+        // (usuarios/{uid}/dados/chamadas). Com o tempo isso estourou o limite do
+        // Firestore ("Too many index entries for entity"). Agora cada dia vira um
+        // documento proprio em usuarios/{uid}/chamadas/{AAAA-MM-DD}.
         useEffect(() => {
           if (!user) return;
-          db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas").get().then(doc => {
-              if (doc.exists) setChamadas(doc.data() || {});
-            });
+          let cancelado = false;
+
+          const carregarChamadas = async () => {
+            const chamadasRef = db.collection("usuarios").doc(user.uid).collection("chamadas");
+            const acumulado = {};
+
+            // 1) Novo formato: um documento por dia
+            try {
+              const snap = await chamadasRef.get();
+              snap.forEach(d => { acumulado[d.id] = d.data() || {}; });
+            } catch (e) {
+              console.error("Erro ao carregar chamadas (novo formato):", e);
+            }
+
+            // 2) Migracao unica do documento antigo (todas as datas juntas)
+            try {
+              const legado = await db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas").get();
+              if (legado.exists) {
+                const dados = legado.data() || {};
+                const diasFaltando = Object.keys(dados).filter(dia => /^\d{4}-\d{2}-\d{2}$/.test(dia) && !acumulado[dia]);
+                diasFaltando.forEach(dia => { acumulado[dia] = dados[dia]; });
+                for (let i = 0; i < diasFaltando.length; i += 400) {
+                  const lote = db.batch();
+                  diasFaltando.slice(i, i + 400).forEach(dia => lote.set(chamadasRef.doc(dia), dados[dia]));
+                  await lote.commit();
+                }
+              }
+            } catch (e) {
+              console.error("Erro ao migrar chamadas do formato antigo:", e);
+            }
+
+            if (!cancelado) setChamadas(acumulado);
+          };
+
+          carregarChamadas();
+          return () => { cancelado = true; };
+        }, [user]);
+
+        // Reenvia chamadas que ficaram so no backup local (falha anterior de gravacao)
+        useEffect(() => {
+          if (!user) return;
+          const prefixo = 'chamadaBackup_' + user.uid + '_';
+          Object.keys(localStorage).filter(k => k.startsWith(prefixo)).forEach(async (k) => {
+            const dia = k.slice(prefixo.length);
+            try {
+              await db.collection("usuarios").doc(user.uid).collection("chamadas").doc(dia).set(JSON.parse(localStorage.getItem(k)));
+              localStorage.removeItem(k);
+            } catch (e) { /* tenta de novo no proximo carregamento */ }
+          });
         }, [user]);
 
         const getExpediente = (dateStr) => {
@@ -207,14 +257,21 @@
           const dadosDoDia = getChamadaDodia(selectedDate);
           const novaChamada = { ...chamadas, [selectedDate]: dadosDoDia };
           setChamadas(novaChamada);
-          
-          db.collection("usuarios").doc(user.uid).collection("dados").doc("chamadas")
-            .set({ [selectedDate]: dadosDoDia }, { merge: true })
+
+          // Backup local imediato: a chamada nunca se perde, mesmo se o servidor falhar
+          try {
+            localStorage.setItem('chamadaBackup_' + user.uid + '_' + selectedDate, JSON.stringify(dadosDoDia));
+          } catch (e) {}
+
+          // Um documento por dia (evita o limite de indices por documento do Firestore)
+          db.collection("usuarios").doc(user.uid).collection("chamadas").doc(selectedDate)
+            .set(dadosDoDia)
             .then(() => {
+                try { localStorage.removeItem('chamadaBackup_' + user.uid + '_' + selectedDate); } catch (e) {}
                 alert('Chamada do dia ' + new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR') + ' salva com sucesso!');
             })
             .catch(error => {
-                alert('Erro ao salvar a chamada: ' + error.message);
+                alert('Erro ao salvar a chamada: ' + error.message + '\n\nUma copia foi guardada neste computador e sera reenviada automaticamente na proxima abertura.');
             });
         };
 
